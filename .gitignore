@@ -1,0 +1,16 @@
+## Ignore Visual Studio temporary files, build outputs, and user-specific files
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Visual Studio Code
+.vscode/
+
+## OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
