@@ -1,5 +1,14 @@
 using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using AIHelloWorldConsole.Interfaces;
+using AIHelloWorldConsole.Services;
 
-// Minimal console app for AIHelloWorld-Console
-Console.WriteLine("Hello from AIHelloWorld-Console!");
-Console.WriteLine("Hello World");
+// Configure DI
+var services = new ServiceCollection();
+services.AddScoped<IAIService, GeminiService>();
+using var provider = services.BuildServiceProvider();
+
+var ai = provider.GetRequiredService<IAIService>();
+var result = await ai.GenerateAsync("Hello from Program");
+Console.WriteLine(result);
