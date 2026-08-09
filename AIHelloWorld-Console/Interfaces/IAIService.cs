@@ -1,9 +1,9 @@
-﻿using System;
+﻿using AIHelloWorld.Console.Models.Common;
 
 namespace AIHelloWorldConsole.Interfaces
 {
     public interface IAIService
     {
-        Task<string> GenerateAsync(string propt);
+        Task<AIResult> GenerateAsync(string prompt, CancellationToken cancellationToken = default);
     }
 }
