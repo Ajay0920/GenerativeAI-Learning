@@ -1,41 +1,69 @@
+using Microsoft.Extensions.Options;
+using PRReviewBot.Application.Interfaces;
+using PRReviewBot.Application.Models.Gemini;
+using PRReviewBot.Application.Services;
+using PRReviewBot.Infrastructure.AI;
+using PRReviewBot.Infrastructure.Configiration;
+using PRReviewBot.Infrastructure.Configuration;
+
+// using PRReviewBot.Infrastructure.Configiration; // removed to avoid GeminiOptions ambiguity
+using PRReviewBot.Infrastructure.GitHub;
+using System.Net.Http.Headers;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddOptions<GithubOptions>()
+    .Bind(builder.Configuration.GetSection(GithubOptions.SectionName))
+    .Validate(o => !string.IsNullOrEmpty(o.Token), "Token is required")
+    .ValidateOnStart();
+builder.Services.Configure<GithubOptions>(builder.Configuration.GetSection(GithubOptions.SectionName));
 
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<IPRReviewService, PRReviewService>();
+
+builder.Services.AddHttpClient<IGitHubService, GitHubService>(
+(serviceProvider,client) =>
+{
+    var options=serviceProvider.GetRequiredService<IOptions<GithubOptions>>().Value;
+    client.BaseAddress = new Uri("https://api.github.com/");
+    client.DefaultRequestHeaders.Accept.Add(
+    new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("PRReviewBot");
+    client.DefaultRequestHeaders.Add("X-GitHub-Api-Version", "2026-03-10");
+    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",options.Token);
+});
+
+builder.Services.AddOptions<GeminiOptions>()
+    .Bind(builder.Configuration.GetSection(GeminiOptions.SectionName))
+    .Validate(o => !string.IsNullOrEmpty(o.ApiKey), "ApiKey is required")
+    .ValidateOnStart();
+builder.Services.Configure<GeminiOptions>(builder.Configuration.GetSection(GeminiOptions.SectionName));
+
+
+builder.Services.AddHttpClient<IAIService, GeminiService>((serviceProvider, client) =>
+{
+    var options = serviceProvider.GetRequiredService<IOptions<GeminiOptions>>().Value;
+    client.BaseAddress = new Uri(options.BaseUrl);
+})
+.AddStandardResilienceHandler(options =>
+{
+    options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(60);
+    options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(120);
+    options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(120);
+});
+
+//builder.Services.AddOptions<GeminiOptions>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+// Enable Swagger UI in all environments so it's available for testing locally.
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+app.UseAuthorization();
+app.MapControllers();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
