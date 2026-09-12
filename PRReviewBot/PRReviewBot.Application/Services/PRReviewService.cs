@@ -177,13 +177,13 @@ namespace PRReviewBot.Application.Services
             sb.AppendLine("    \"findings\": [");
             sb.AppendLine("        {");
             sb.AppendLine("            \"filePath\": \"path/to/file.cs\",");
-            sb.AppendLine("            \"line\": 45,");
+            sb.AppendLine("            \"lineNumber\": 45,");
             sb.AppendLine("            \"side\": \"RIGHT\",");
             sb.AppendLine("            \"className\": \"UserService\",");
             sb.AppendLine("            \"severity\": \"High\",");
             sb.AppendLine("            \"issue\": \"Description of the problem\",");
             sb.AppendLine("            \"recommendation\": \"What the developer should do\",");
-            sb.AppendLine("            \"suggestedFix\": \"Possible implementation or fix\"");
+            sb.AppendLine("            \"possibleFix\": \"Possible implementation or fix\"");
             sb.AppendLine("        }");
             sb.AppendLine("    ]");
             sb.AppendLine("}");

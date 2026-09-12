@@ -1,15 +1,25 @@
-﻿namespace PRReviewBot.Application.Models.Common
+﻿using System.Text.Json.Serialization;
+
+namespace PRReviewBot.Application.Models.Common
 {
     public class ReviewFinding
     {
+        [JsonPropertyName("filePath")]
         public string FilePath { get; set; } = string.Empty;
-        public int Line { get; set; }
-        public string Side { get; set; } = "RIGHT";
+        [JsonPropertyName("className")]
         public string ClassName { get; set; } = string.Empty;
+        [JsonPropertyName("line")]
+        public int LineNumber { get; set; }
+        [JsonPropertyName("side")]
+        public string Side { get; set; } = "RIGHT";
+        [JsonPropertyName("severity")]
         public string Severity { get; set; } = string.Empty;
+        [JsonPropertyName("issue")]
         public string Issue { get; set; } = string.Empty;
-        public string Recommendation { get; set; }
-        public string? SuggestedFix { get; set; }
+        [JsonPropertyName("recommendation")]
+        public string Recommendation { get; set; }=string.Empty;
+        [JsonPropertyName("suggestedFix")]
+        public string? PossibleFix { get; set; }
 
     }
 }

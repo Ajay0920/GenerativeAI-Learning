@@ -19,8 +19,6 @@ builder.Services.AddOptions<GithubOptions>()
 builder.Services.Configure<GithubOptions>(builder.Configuration.GetSection(GithubOptions.SectionName));
 
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IPRReviewService, PRReviewService>();
 
 builder.Services.AddHttpClient<IGitHubService, GitHubService>(
@@ -53,7 +51,8 @@ builder.Services.AddHttpClient<IAIService, GeminiService>((serviceProvider, clie
     options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(120);
     options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(120);
 });
-
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 //builder.Services.AddOptions<GeminiOptions>();
 var app = builder.Build();
 
